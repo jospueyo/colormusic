@@ -1,7 +1,7 @@
 library(tidyverse)
 
-test_df <- tibble(notes = sample(c(LETTERS[1:7], letters[1:7]), 30L, replace = TRUE)) |>
-  mutate(id = row_number())
+
+# CAPS are for the first octave and small letters are for the secon octave in the piano
 
 notes <- tribble(
   ~ notes, ~ position, ~ color,
@@ -13,25 +13,49 @@ notes <- tribble(
   "F", 1.5, "green",
   "G", 2, "lightblue",
   "a", 6, "darkblue",
-  "b", 3, "violet",
+  "b", 6.5, "violet",
   "c", 3.5, "red",
   "d", 4, "orange",
   "e", 4.5, "yellow",
   "f", 5, "green",
-  "g", 5.5, "lightblue",
-
+  "g", 5.5, "lightblue"
 )
 
+test_df <- tibble(notes = sample(c(LETTERS[1:7], letters[1:7]), 50, replace = T)) |>
+  mutate(group = ceiling(row_number()/14)) |>
+  group_by(group) |>
+  mutate(id = row_number()) |>
+  ungroup()
 
+song <- test_df |>
+  left_join(notes)
 
-test_df |>
-  left_join(notes) |>
+out_score <- song |>
+  filter(notes %in% c("C", "a", "b")) |>
+  mutate(line = if_else(notes == "b", 6, position))
+
+g_key <- case_when(
+  # max(song$group) == 1 ~ 50,
+  max(song$group) == 2 ~ c(50,3),
+  max(song$group) == 3 ~ c(35, 3.1),
+  max(song$group) == 4 ~ c(30, 3.2),
+  max(song$group) == 5 ~ c(28, 3.35),
+)
+
+song |>
   ggplot(aes(x = id, y=position, color = color))+
-  geom_point(show.legend = F, size=10)+
-  scale_color_identity()+
-  ylim(-2,9)+
-  theme_void()+
+  geom_point(show.legend = F, size=6)+
   geom_hline(yintercept = 1:5)+
+  geom_segment(data = out_score,
+               mapping = aes(x = id-0.3, xend = id+0.3, y = line, yend = line), color = "black")+
+  geom_text(x = -0.5, y = g_key[2],label = "\U1D11E", size = g_key[1], color="black")+
+  scale_color_identity()+
+  xlim(-1,14)+
+  ylim(-2,9)+
+  facet_wrap(vars(group), ncol = 1)+
+  theme_void()+
   ggtitle("Test song")+
-  theme(plot.title = element_text(hjust=0.5))
-ggsave("songs/test.jpg", width = 11)
+  theme(plot.title = element_text(hjust=0.5),
+        strip.background = element_blank(),
+        strip.text.x = element_blank())
+ggsave("songs/test.jpg", width = 8, height = 11)
