@@ -1,4 +1,5 @@
 library(tidyverse)
+library(tidytext)
 
 
 # CAPS are for the first octave and small letters are for the secon octave in the piano
@@ -21,13 +22,18 @@ notes <- tribble(
   "g", 5.5, "lightblue"
 )
 
-test_df <- tibble(notes = sample(c(LETTERS[1:7], letters[1:7]), 50, replace = T)) |>
+filename <- "test song.txt"
+
+test_song <- read.csv(file.path("songs", filename), header = F) |>
+  unnest_tokens(notes, V1, to_lower = F) |>
   mutate(group = ceiling(row_number()/14)) |>
   group_by(group) |>
   mutate(id = row_number()) |>
   ungroup()
 
-song <- test_df |>
+
+
+song <- test_song |>
   left_join(notes)
 
 out_score <- song |>
@@ -54,8 +60,8 @@ song |>
   ylim(-2,9)+
   facet_wrap(vars(group), ncol = 1)+
   theme_void()+
-  ggtitle("Test song")+
+  ggtitle(str_remove(filename, fixed(".txt")))+
   theme(plot.title = element_text(hjust=0.5),
         strip.background = element_blank(),
         strip.text.x = element_blank())
-ggsave("songs/test.jpg", width = 8, height = 11)
+ggsave(file.path("songs", str_replace(filename, "\\.txt$", ".jpg")), width = 8, height = 11)
