@@ -2,25 +2,7 @@ library(tidyverse)
 library(tidytext)
 
 
-# CAPS are for the first octave and small letters are for the secon octave in the piano
 
-notes <- tribble(
-  ~ notes, ~ position, ~ color,
-  "A", 2.5, "darkblue",
-  "B", 3, "violet",
-  "C", 0, "red",
-  "D", 0.5, "orange",
-  "E", 1, "yellow",
-  "F", 1.5, "green",
-  "G", 2, "lightblue",
-  "a", 6, "darkblue",
-  "b", 6.5, "violet",
-  "c", 3.5, "red",
-  "d", 4, "orange",
-  "e", 4.5, "yellow",
-  "f", 5, "green",
-  "g", 5.5, "lightblue"
-)
 
 filename <- "test song.txt"
 
@@ -37,8 +19,8 @@ song <- test_song |>
   left_join(notes)
 
 out_score <- song |>
-  filter(notes %in% c("C", "a", "b")) |>
-  mutate(line = if_else(notes == "b", 6, position))
+  filter(notes %in% c("C", "a", "b", "DO", "la", "si")) |>
+  mutate(line = if_else(notes %in% c("b", "si"), 6, position))
 
 g_key <- case_when(
   # max(song$group) == 1 ~ 50,
@@ -64,4 +46,4 @@ song |>
   theme(plot.title = element_text(hjust=0.5),
         strip.background = element_blank(),
         strip.text.x = element_blank())
-ggsave(file.path("songs", str_replace(filename, "\\.txt$", ".jpg")), width = 8, height = 11)
+ggsave(file.path("songs", str_replace(filename, "\\.txt$", ".jpg")), width = 5, height = 11)

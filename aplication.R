@@ -1,3 +1,3 @@
 source("utils.R")
 
-tidy_song("test song.txt")
+draw_score("Sol solet.txt", "notes_la")
